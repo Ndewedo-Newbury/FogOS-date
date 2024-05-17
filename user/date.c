@@ -20,7 +20,6 @@ struct dateTime
   char *name_of_month;
 };
 
-
 // Returning dateTime struct by setting metrics(secs, minutes, hours, etc) 
 // to current totals.
 // years is excluded because of leap year math
@@ -130,53 +129,74 @@ parse_args(struct dateTime *dt, int argc, char **argv)
 
   if (argc < 2) {
     printf("%d/%d/%d\n", dt->curr_month_index, dt->days, dt->years);
-  }
-  else if (argc >= 2) {
+
+  } else if (argc >= 2) {
 
     if (strstr(argv[1], "--date") == 1 || strstr(argv[1], "-F") == 1) {
 
-      for (int i = 1; i < argc; i++) {
+      // bypasses the arguments and starts the read at start_char
+      int start_char = 0;
+
+      // start char changes depending on which command is used
+      // since they are different lengths then start char is cha-
+      // nged accordingly
+      if (strstr(argv[1], "--date") == 1) {
+        start_char = 7;
+      } else {
+        start_char = 3;
+      }
+      
+      int str_len = strlen(argv[1]);
+
+      if (str_len - start_char <= 0)
+        fprintf(2, "Invalid command option\n Try 'date --help' for more information.\n");
+
+
+      for (int i = start_char; i < str_len; i++) {
         
+        if (argv[1][i] == '%')
+          continue;
+
         // Format name of today
-        if (strstr(argv[i], "%a") == 1) {
+        if (argv[1][i] == 'a') {
           printf("%s ", dt->name_of_day);
 
         // Format this month's name
-        } else if (strstr(argv[i], "%b") == 1) {
+        } else if (argv[1][i] == 'b') {
           printf("%s ", dt->name_of_month);
 
         // Format full date
-        } else if (strstr(argv[i], "%c") == 1) {
+        } else if (argv[1][i] == 'c') {
           printf("%s %s %d ", dt->name_of_day, dt->name_of_month, dt->days);
           printf("%d:%d:%d %d ", dt->hours, dt->minutes, dt->secs, dt->years);
 
         // Format current year
-        } else if (strstr(argv[i], "%Y") == 1) {
+        } else if (argv[1][i] == 'Y') {
           printf("%d ", dt->years);
         }
 
         // Format alphabetic time zone abbreviation
-        else if (strstr(argv[i], "%Z") == 1) {
+        else if (argv[1][i] == 'Z') {
           printf("PST ");
         }
 
         // Format current date
-        else if (strstr(argv[i], "%x") == 1) {
+        else if (argv[1][i] == 'x') {
           printf("%d/%d/%d ", dt->curr_month_index, dt->days, dt->years);
         }
 
         // Format time now
-        else if (strstr(argv[i], "%X") == 1) {
+        else if (argv[1][i] == 'X') {
           printf("%d:%d:%d ", dt->hours, dt->minutes, dt->secs);
         }
 
         // Add new line
-        else if (strstr(argv[i], "%n") == 1) {
+        else if (argv[1][i] == 'n') {
           printf("\n");
         }
 
         // Add tab space
-        else if (strstr(argv[i], "%t") == 1) {
+        else if (argv[1][i] == 't') {
           printf("\t");
         }
       }
@@ -195,7 +215,7 @@ parse_args(struct dateTime *dt, int argc, char **argv)
 
       // Output help information
       else if (strcmp(argv[1], "--help") == 0) {
-        printf("\n-d, -F=STRING, --date=STRING\n\tdisplay time described by STRING, not 'now'\n\n");
+        printf("\n-F=STRING, --date=STRING\n\tdisplay time described by STRING, not 'now'\n\n");
         printf("-R, --rfc-email\n\toutput date and time in RFC 5322 format.Example: Mon, 14\n\tAug 2006 02:34:56 -0600\n");
         printf("-u, --utc, --universal\n\tprint or set Coordinated Universal Time (UTC)\n");
         printf("--help display this help and exit\n");
@@ -208,6 +228,8 @@ parse_args(struct dateTime *dt, int argc, char **argv)
         printf("%X     locale's time representation (e.g., 23:13:48)\n");
         printf("%t     a tab\n");
         printf("%n     a newline\n");
+      } else {
+        fprintf(2, "Invalid command option\n Try 'date --help' for more information.\n");
       }
     }
   }
